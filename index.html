@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/public/favicon.png" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="/main.css" rel="stylesheet">
+  <title>EBG Mart</title>
+</head>
+<body>
+  <header>
+    <div class="navbar bg-base-100">
+      <img src="./public/logo.png" class="btn btn-ghost" href="/index.html"  />
+    </div>
+  </header>
+
+  <main class="p-5 items-center justify-center h-screen flex bg-base-200">
+    <div class="card shadow-xl bg-base-100">
+      <div class="card-body">
+        <div class="hero">
+          <div class="hero-content grid grid-cols-2 justify-center">
+            <div class="text-center lg:text-left">
+              <h1 class="text-5xl font-bold">Login now!</h1>
+              <ul class="list-disc py-6">
+                <li class="font-normal"><span class="font-bold"> Unlimited Offers: </span> Logging in grants users access to exclusive deals and discounts that are not available to guests.</li>
+                <li class="font-normal"><span class="font-bold">Customized Coupons: </span> Upon logging in, users can receive personalized coupons based on their shopping history, preferences, and behavior.</li>
+                <li class="font-normal"><span class="font-bold">Favorite Brands Shopping: </span> Logging in allows users to save and follow their favorite brands, enabling them to stay updated on new arrivals, promotions, and events from brands they love.</li>
+                <li class="font-normal"><span class="font-bold">Earn Points with New Technologies: </span> Introduce innovative loyalty programs where users can earn points or rewards for various activities such as making purchases, writing reviews, or referring friends.</li>
+              </ul>    
+            </div>
+            <div class="flex justify-center">
+              <div class="card w-full max-w-sm shadow-2xl bg-base-200">
+                <form id="loginForm" class="card-body">
+                  <div class="form-control">
+                    <label class="label">
+                      <span class="label-text">Email</span>
+                    </label>
+                    <input id="email" type="email" placeholder="email" class="input input-bordered" required />
+                  </div>
+                  <div class="form-control">
+                    <label class="label">
+                      <span class="label-text">Password</span>
+                    </label>
+                    <input id="password" type="password" placeholder="password" class="input input-bordered" required />
+                    <label class="label">
+                      <a href="#" class="label-text-alt link link-hover">Forgot password?</a>
+                    </label>
+                  </div>
+                  <div class="form-control mt-6">
+                    <button type="submit" class="btn bg-orange-500 text-white">Login</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer p-10 bg-base-100 text-base-content grid grid-cols-4 justify-center">
+    <aside class="flex flex-col justify-center px-5">
+      <img src="./public/logo.png" href="/index.html" class="w-72"/>
+      <div class="divider divider-neutral"></div>
+      <p> Join (Ethical Business Group) to avail a great opportunity to discuss strategies & ideas to help achieve Business success.</p>
+    </aside> 
+    <nav class="mx-auto">
+      <h6 class="footer-title">Quick Links</h6> 
+      <a class="link link-hover">Home</a>
+      <a class="link link-hover">About Us</a>
+      <a class="link link-hover">Testimonials</a>
+      <a class="link link-hover">FAQ's</a>
+      <a class="link link-hover">Contact Us</a>
+    </nav> 
+    <nav class="mx-auto">
+      <h6 class="footer-title">Imp Links</h6> 
+      <a class="link link-hover">Image Gallery</a>
+      <a class="link link-hover">Video Gallery</a>
+      <a class="link link-hover">Membership</a>
+      <a class="link link-hover">Our Members</a>
+    </nav> 
+    <nav class="mx-auto">
+      <h6 class="footer-title">Contact Us
+      </h6> 
+      <a class="link link-hover"><span class="font-bold"> Address: </span>115 1st floor Antriksh Bhawan 22 K G Marg, Connaught Place New Delhi -110001</a>
+     <div class="divider">
+
+     </div>
+      <a class="link link-hover"><span class="font-bold">Contact : </span> 011- 43586391 ,92</a>
+    </nav>
+  </footer>
+
+  <script>
+    document.getElementById('loginForm').addEventListener('submit', async function(event) {
+      event.preventDefault();
+      
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      
+      try {
+        const response = await fetch('http://127.0.0.1:8090/api/collections/users/auth-with-password', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            identity: email,
+            password: password
+          })
+        });
+        
+        const data = await response.json();
+        if (response.ok) {
+          if (data.record.type === 'user') {
+            window.location.href = '/user.html';
+          } else if (data.record.type === 'vendor') {
+            window.location.href = '/vendor.html';
+          }
+
+          const userDetails = JSON.stringify(data.record);
+          document.cookie = `LoginCookie=${userDetails}; path=/;`;
+        } else {
+          console.error('Login failed:', data.error);
+        }
+      } catch (error) {
+        console.error('Login failed:', error);
+      }
+    });
+  </script>
+</body>
+</html>
