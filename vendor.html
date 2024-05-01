@@ -16,18 +16,31 @@
             return cookieValue ? cookieValue.pop() : null;
         }
 
-        window.addEventListener('DOMContentLoaded', function () {
+        window.addEventListener('DOMContentLoaded', async function () {
             const userDetails = getCookie('LoginCookie');
             if (userDetails) {
                 const user = JSON.parse(userDetails);
-                document.getElementById('userPoints').textContent = user.points;
                 document.getElementById('login').style.display = 'none';
                 document.getElementById('loggedIn').style.display = 'flex';
+
+                try {
+                    const response = await fetch(`http://127.0.0.1:8090/api/collections/users/records/${user.id}`);
+                    if (response.ok) {
+                        const userData = await response.json();
+                        const userPointsElement = document.getElementById('userPoints');
+                        userPointsElement.textContent = userData.points;
+                    } else {
+                        throw new Error('Failed to fetch user points');
+                    }
+                } catch (error) {
+                    console.error('Error fetching user points:', error.message);
+                }
             } else {
                 document.getElementById('login').style.display = 'flex';
                 document.getElementById('loggedIn').style.display = 'none';
             }
         });
+
 
         function logout() {
             document.cookie = 'LoginCookie=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
@@ -60,7 +73,7 @@
                     <li>
                         <a class="justify-between font-bold">
                             Points:
-                            <span id="userPoints" class="badge badge-success text-white">//points</span>
+                            <span id="userPoints" class="badge badge-success text-white">0</span>
                         </a>
                     </li>
                     <li><a onclick="logout()" class="font-bold">Logout</a></li>

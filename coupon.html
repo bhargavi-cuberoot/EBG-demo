@@ -17,18 +17,31 @@
             return cookieValue ? cookieValue.pop() : null;
         }
 
-        window.addEventListener('DOMContentLoaded', function () {
+        window.addEventListener('DOMContentLoaded', async function () {
             const userDetails = getCookie('LoginCookie');
             if (userDetails) {
                 const user = JSON.parse(userDetails);
-                document.getElementById('userPoints').textContent = user.points;
                 document.getElementById('login').style.display = 'none';
                 document.getElementById('loggedIn').style.display = 'flex';
+
+                try {
+                    const response = await fetch(`http://127.0.0.1:8090/api/collections/users/records/${user.id}`);
+                    if (response.ok) {
+                        const userData = await response.json();
+                        const userPointsElement = document.getElementById('userPoints');
+                        userPointsElement.textContent = userData.points;
+                    } else {
+                        throw new Error('Failed to fetch user points');
+                    }
+                } catch (error) {
+                    console.error('Error fetching user points:', error.message);
+                }
             } else {
                 document.getElementById('login').style.display = 'flex';
                 document.getElementById('loggedIn').style.display = 'none';
             }
         });
+
 
         function updatePointsNeeded() {
             const amountInput = document.getElementById('amountInput');
@@ -56,7 +69,7 @@
                 const data = {
                     "id": generateRandomId(15),
                     "vendor": "lyx04ybq0pjvpgl",
-                    "reedem": JSON.parse(getCookie('LoginCookie')).id,
+                    "creator": JSON.parse(getCookie('LoginCookie')).id,
                     "expired": false,
                     "comments": "",
                     "expirydate": ""
@@ -72,22 +85,11 @@
                     });
 
                     if (response.ok) {
-                        // Coupon generated successfully
                         showSuccessAlert('Coupon created successfully!');
-                        // Calculate new points for the user
                         const newPoints = userPoints - pointsNeeded;
+                        updatePointsInPocketBase(newPoints);
 
-                        // Update points in cookie
-                        const userDetails = JSON.parse(getCookie('LoginCookie'));
-                        userDetails.points = newPoints;
-                        document.cookie = `LoginCookie=${JSON.stringify(userDetails)}`;
-
-                        // Update points on the page
-                        userPointsElement.textContent = newPoints;
-
-                        // Generate QR code
                         generateQRCode(data.id);
-                        // Hide amount card and show QR code card
                         toggleCardVisibility();
                     } else {
                         throw new Error('Failed to generate coupon');
@@ -100,6 +102,33 @@
                 showErrorAlert('Error! Coupon generation failed. You don\'t have enough points');
             }
         }
+        async function updatePointsInPocketBase(newPoints) {
+            const userDetails = JSON.parse(getCookie('LoginCookie'));
+            const userId = userDetails.id;
+
+            const updateData = {
+                "points": newPoints.toString()
+            };
+
+            try {
+                const response = await fetch(`http://127.0.0.1:8090/api/collections/users/records/${userId}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(updateData)
+                });
+
+                if (response.ok) {
+                    console.log('User points updated successfully in PocketBase.');
+                } else {
+                    throw new Error('Failed to update user points in PocketBase.');
+                }
+            } catch (error) {
+                console.error('Error updating user points in PocketBase:', error.message);
+            }
+        }
+
 
         function showSuccessAlert(message) {
             const alertElement = document.getElementById('alert');
@@ -127,7 +156,7 @@
 
         function generateQRCode(couponId) {
             const qrCodeElement = document.getElementById('qrCode');
-            qrCodeElement.innerHTML = ''; // Clear previous QR code if any
+            qrCodeElement.innerHTML = '';
             new QRCode(qrCodeElement, {
                 text: couponId,
                 width: 128,
@@ -155,7 +184,8 @@
 
     <header id="loggedIn" style="display: none;">
         <div class="navbar bg-base-100 flex justify-between">
-            <img src="./public/logo.png" class="btn btn-ghost" href="/index.html" />
+            <a href="/index.html">
+            <img src="./public/logo.png" class="btn btn-ghost" /></a>
 
             <div class="dropdown dropdown-end ">
                 <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar">
@@ -168,7 +198,7 @@
                     <li>
                         <a class="justify-between font-bold">
                             Points:
-                            <span id="userPoints" class="badge badge-success text-white">//points</span>
+                            <span id="userPoints" class="badge badge-success text-white">0</span>
                         </a>
                     </li>
                     <li><a onclick="logout()" class="font-bold">Logout</a></li>
@@ -176,17 +206,18 @@
             </div>
         </div>
     </header>
- 
+
     <main class="p-5 items-center justify-center h-screen flex bg-base-200">
 
-     
+
         <div class="card shadow-xl bg-base-100">
             <div class="card-body">
                 <label class="form-control w-[30rem]">
                     <div class="label">
                         <span class="label-text font-bold">Enter Amount</span>
                     </div>
-                    <input id="amountInput" type="tel" placeholder="amount" class="input input-bordered w-[30rem]" oninput="updatePointsNeeded()" />
+                    <input id="amountInput" type="tel" placeholder="amount" class="input input-bordered w-[30rem]"
+                        oninput="updatePointsNeeded()" />
                     <div class="label">
                         <span id="pointsNeeded" class="label-text-alt">Points Needed: 0</span>
                     </div>
@@ -197,7 +228,7 @@
                 </button>
 
                 <div id="alert">
-                    
+
                 </div>
             </div>
         </div>

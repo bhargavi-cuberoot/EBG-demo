@@ -35,7 +35,7 @@
                     <li>
                         <a class="justify-between font-bold">
                             Points:
-                            <span id="userPoints" class="badge badge-success text-white">//points</span>
+                            <span id="userPoints" class="badge badge-success text-white">0</span>
                         </a>
                     </li>
                     <li><a onclick="logout()" class="font-bold">Logout</a></li>
@@ -47,7 +47,7 @@
     <main class="p-5 items-center justify-center h-screen flex bg-base-200">
         <div class="card shadow-2xl bg-base-100">
             <div class="card-body grid grid-cols-1 gap-10" id="vendorList">
-             
+
             </div>
         </div>
     </main>
@@ -126,14 +126,31 @@
             return cookieValue ? cookieValue.pop() : null;
         }
 
+        async function updateUserPoints() {
+            try {
+                const response = await fetch('http://127.0.0.1:8090/api/collections/users/records');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch user data');
+                }
+                const data = await response.json();
+                const userId = userDetails.id;
+                const user = data.items.find(item => item.id === userId);
+                const userPointsSpan = document.getElementById('userPoints');
+                userPointsSpan.textContent = user ? `Points: ${user.points}` : 'Points: N/A';
+            } catch (error) {
+                console.error('Error updating user points:', error.message);
+            }
+        }
+        window.addEventListener('DOMContentLoaded', updateUserPoints);
+
         window.addEventListener('DOMContentLoaded', async function () {
             const userDetails = getCookie('LoginCookie');
             if (userDetails) {
                 const user = JSON.parse(userDetails);
-                document.getElementById('userPoints').textContent = `Points: ${user.points}`;
+
                 document.getElementById('login').style.display = 'none';
                 document.getElementById('loggedIn').style.display = 'flex';
-                
+
                 const vendors = await fetchVendors();
                 const vendorListContainer = document.getElementById('vendorList');
                 if (vendors && vendors.length > 0) {
