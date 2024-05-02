@@ -50,7 +50,6 @@
         });
 
 
-
         function updatePointsNeeded() {
             const amountInput = document.getElementById('amountInput');
             const pointsNeededElement = document.getElementById('pointsNeeded');
@@ -184,29 +183,6 @@
             amountCard.style.display = 'none';
             qrCodeCard.style.display = 'flex';
         }
-
-        function displayCoupons(coupons) {
-            const tableBody = document.getElementById('couponTableBody');
-            if (coupons.length > 0) {
-                let index = 1;
-                coupons.forEach(coupon => {
-                    const row = `
-                <tr>
-                    <td>${index}</td> <!-- Display index -->
-                    <td>${coupon.vendor}</td>
-                    <td>${coupon.amount}</td>
-                    <td>${coupon.points}</td>
-                    <td>${coupon.id}</td>
-                    <td>Share</td>
-                </tr>`;
-                    tableBody.insertAdjacentHTML('beforeend', row);
-                    index++;
-                });
-            } else {
-                tableBody.innerHTML = '<tr><td colspan="6">No coupon</td></tr>';
-            }
-        }
-
     </script>
 
     <header id="login">
@@ -241,9 +217,7 @@
                     </ul>
                 </div>
             </div>
-
         </div>
-
     </header>
 
     <main class="p-5 items-center justify-center h-screen flex flex-col bg-base-200">
@@ -281,29 +255,6 @@
                 <div id="qrCode"></div>
                 <div id="couponId"></div>
 
-            </div>
-        </div>
-
-        <div class="card shadow-xl bg-base-100 mt-20">
-            <div class="card-body">
-                <div class="card-title">Your Coupons</div>
-                <div class="overflow-x-auto">
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>S.No.</th>
-                                <th>Vendor</th>
-                                <th>Amount</th>
-                                <th>Points</th>
-                                <th>Coupon ID</th>
-                                <th>Share</th>
-                            </tr>
-                        </thead>
-                        <tbody id="couponTableBody">
-                            <!-- Table rows will be inserted here dynamically -->
-                        </tbody>
-                    </table>
-                </div>
             </div>
         </div>
     </main>

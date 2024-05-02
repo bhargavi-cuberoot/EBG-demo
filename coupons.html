@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/public/favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="/main.css" rel="stylesheet">
+    <title>EBG Mart: Coupons</title>
+    <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
+</head>
+
+<body>
+    <script>
+        function getCookie(name) {
+            const cookieValue = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+            return cookieValue ? cookieValue.pop() : null;
+        }
+
+        window.addEventListener('DOMContentLoaded', async function () {
+            const userDetails = getCookie('LoginCookie');
+            if (userDetails) {
+                const user = JSON.parse(userDetails);
+                document.getElementById('login').style.display = 'none';
+                document.getElementById('loggedIn').style.display = 'flex';
+
+                try {
+                    const response = await fetch(`http://127.0.0.1:8090/api/collections/coupon/records`);
+                    if (response.ok) {
+                        const couponData = await response.json();
+                        displayCoupons(couponData.items);
+                        const userDataResponse = await fetch(`http://127.0.0.1:8090/api/collections/users/records/${user.id}`);
+                        if (userDataResponse.ok) {
+                            const userData = await userDataResponse.json();
+                            const userPointsElement = document.getElementById('userPoints');
+                            userPointsElement.textContent = userData.points;
+                        } else {
+                            throw new Error('Failed to fetch user points');
+                        }
+                    } else {
+                        throw new Error('Failed to fetch coupon records');
+                    }
+                } catch (error) {
+                    console.error('Error:', error.message);
+                }
+            } else {
+                document.getElementById('login').style.display = 'flex';
+                document.getElementById('loggedIn').style.display = 'none';
+            }
+        });
+function displayCoupons(coupons) {
+    const tableBody = document.getElementById('couponTableBody');
+    if (coupons.length > 0) {
+        let index = 1;
+        coupons.forEach(coupon => {
+            const row = `
+        <tr>
+            <td>${index}</td> <!-- Display index -->
+            <td>${coupon.vendor}</td>
+            <td>${coupon.amount}</td>
+            <td>${coupon.points}</td>
+            <td>${coupon.id}</td>
+            <td>Share</td>
+        </tr>`;
+            tableBody.insertAdjacentHTML('beforeend', row);
+            index++;
+        });
+    } else {
+        tableBody.innerHTML = '<tr><td colspan="6">No coupon</td></tr>';
+    }
+}
+
+</script>
+
+<header id="login">
+<div class="navbar bg-base-100 flex justify-between">
+    <img src="./public/logo.png" class="btn btn-ghost" href="/index.html" />
+
+    <a class="btn bg-orange-500 text-white" href="/index.html">
+        Login
+    </a>
+</div>
+</header>
+
+<header id="loggedIn" style="display: none;">
+<div class="navbar bg-base-100 flex justify-between">
+    <a href="/index.html">
+        <img src="./public/logo.png" class="btn btn-ghost" /></a>
+
+    <div class="gap-5">
+        <a class="justify-between gap-2 font-bold">
+            Points:
+            <span id="userPoints" class="badge badge-success text-white">0</span>
+        </a>
+        <div class="dropdown dropdown-end  ">
+            <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar">
+                <div class="w-10 rounded-full">
+                    <img alt="user" src="/public/user.png" />
+                </div>
+            </div>
+            <ul tabindex="0"
+                class="mt-3 z-[1] p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-52">
+                <li><a onclick="logout()" class="font-bold">Logout</a></li>
+            </ul>
+        </div>
+    </div>
+</div>
+</header>
+
+<main class="py-20 px-20 h-screen flex flex-col bg-base-200">
+<div class="card shadow-xl bg-base-100">
+    <div class="card-body">
+        <div class="card-title">Your Coupons</div>
+        <div class="overflow-x-auto">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>S.No.</th>
+                        <th>Vendor</th>
+                        <th>Amount</th>
+                        <th>Points</th>
+                        <th>Coupon ID</th>
+                        <th>Share</th>
+                    </tr>
+                </thead>
+                <tbody id="couponTableBody">
+                    <!-- Table rows will be inserted here dynamically -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</main>
+
+<footer class="footer p-10 bg-base-100 text-base-content grid grid-cols-4 justify-center">
+<aside class="flex flex-col justify-center px-5">
+    <img src="./public/logo.png" href="/index.html" class="w-72" />
+    <div class="divider divider-neutral"></div>
+    <p> Join (Ethical Business Group) to avail a great opportunity to discuss strategies & ideas to help achieve
+        Business success.</p>
+</aside>
+<nav class="mx-auto">
+    <h6 class="footer-title">Quick Links</h6>
+    <a class="link link-hover">Home</a>
+    <a class="link link-hover">About Us</a>
+    <a class="link link-hover">Testimonials</a>
+    <a class="link link-hover">FAQ's</a>
+    <a class="link link-hover">Contact Us</a>
+</nav>
+<nav class="mx-auto">
+    <h6 class="footer-title">Imp Links</h6>
+    <a class="link link-hover">Image Gallery</a>
+    <a class="link link-hover">Video Gallery</a>
+    <a class="link link-hover">Membership</a>
+    <a class="link link-hover">Our Members</a>
+</nav>
+<nav class="mx-auto">
+    <h6 class="footer-title">Contact Us
+    </h6>
+    <a class="link link-hover"><span class="font-bold"> Address: </span>115 1st floor Antriksh Bhawan 22 K G
+        Marg, Connaught Place New Delhi -110001</a>
+    <div class="divider">
+
+    </div>
+    <a class="link link-hover"><span class="font-bold">Contact : </span> 011- 43586391 ,92</a>
+</nav>
+</footer>
+
+</body>
+
+</html>

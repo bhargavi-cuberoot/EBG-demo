@@ -1,4 +1,4 @@
-<!-- <!doctype html>
+<!doctype html>
 <html lang="en">
 
 <head>
@@ -6,6 +6,7 @@
     <link rel="icon" type="image/svg+xml" href="/public/favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link href="/main.css" rel="stylesheet">
+    <script src="https://rawgit.com/schmich/instascan-builds/master/instascan.min.js"></script>
     <title>EBG Mart: Vendor</title>
 </head>
 
@@ -60,30 +61,42 @@
 
     <header id="loggedIn" style="display: none;">
         <div class="navbar bg-base-100 flex justify-between">
-            <img src="./public/logo.png" class="btn btn-ghost" href="/index.html" />
+            <a href="/index.html">
+                <img src="./public/logo.png" class="btn btn-ghost" /></a>
 
-            <div class="dropdown dropdown-end ">
-                <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar">
-                    <div class="w-10 rounded-full">
-                        <img alt="user" src="/public/user.png" />
+            <div class="gap-5">
+                <a class="justify-between gap-2 font-bold">
+                    Points:
+                    <span id="userPoints" class="badge badge-success text-white">0</span>
+                </a>
+                <div class="dropdown dropdown-end  ">
+                    <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar">
+                        <div class="w-10 rounded-full">
+                            <img alt="user" src="/public/user.png" />
+                        </div>
                     </div>
+                    <ul tabindex="0"
+                        class="mt-3 z-[1] p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-52">
+                        <li><a onclick="logout()" class="font-bold">Logout</a></li>
+                    </ul>
                 </div>
-                <ul tabindex="0"
-                    class="mt-3 z-[1] p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-52">
-                    <li>
-                        <a class="justify-between font-bold">
-                            Points:
-                            <span id="userPoints" class="badge badge-success text-white">0</span>
-                        </a>
-                    </li>
-                    <li><a onclick="logout()" class="font-bold">Logout</a></li>
-                </ul>
             </div>
         </div>
     </header>
 
-    <main class="p-5 items-center justify-center h-screen flex bg-base-200">
+    <main class="px-20 py-20 flex flex-col bg-base-200">
 
+        <div class="join join-vertical justify-center items-center lg:join-horizontal">
+            <a class="btn join-item bg-base-100" href="/user.html">Users</a>
+            <a class="btn join-item bg-orange-500 text-white" href="/vendor.html">Vendor</a>
+        </div>
+        <div class="card bg-base-100 shadow-xl ">
+            <div class="card-body justify-center items-center">
+                <h1 class="card-title">QR Code Scanner</h1>
+                <video id="qr-video" width="500" height="300" class="border-4 border-current" autoplay></video>
+                <p id="qr-result">QR code result will be here</p>
+            </div>
+        </div>
     </main>
 
     <footer class="footer p-10 bg-base-100 text-base-content grid grid-cols-4 justify-center">
@@ -139,52 +152,31 @@
             document.cookie = 'LoginCookie=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
             window.location.href = '/index.html';
         }
-    </script>
-</body>
-
-</html> -->
 
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>QR Code Scanner</title>
-</head>
-<body>
-<h1>QR Code Scanner</h1>
-<video id="qr-video" width="300" height="200" autoplay></video>
-<p id="qr-result">QR code result will be here</p>
-
-<script src="https://rawgit.com/schmich/instascan-builds/master/instascan.min.js"></script>
-<script>
-// Check if Instascan is available
-if (typeof Instascan === 'undefined') {
-    console.error('Instascan library is not available.');
-} else {
-    // Create a new Instascan scanner instance
-    var scanner = new Instascan.Scanner({ video: document.getElementById('qr-video') });
-
-    // Add a listener for when a QR code is scanned
-    scanner.addListener('scan', function(content) {
-        document.getElementById('qr-result').textContent = content;
-        // Here you can handle the ID extracted from the QR code
-        // For example, send it to the server or perform any other action
-        console.log("QR Code ID:", content);
-    });
-
-    // Start the scanner
-    Instascan.Camera.getCameras().then(function(cameras) {
-        if (cameras.length > 0) {
-            scanner.start(cameras[0]);
+        if (typeof Instascan === 'undefined') {
+            console.error('Instascan library is not available.');
         } else {
-            console.error('No cameras found.');
+            var scanner = new Instascan.Scanner({ video: document.getElementById('qr-video') });
+
+            scanner.addListener('scan', function (content) {
+                document.getElementById('qr-result').textContent = content;
+                console.log("QR Code ID:", content);
+            });
+
+            Instascan.Camera.getCameras().then(function (cameras) {
+                if (cameras.length > 0) {
+                    scanner.start(cameras[0]);
+                } else {
+                    console.error('No cameras found.');
+                }
+            }).catch(function (err) {
+                console.error('Error accessing cameras.', err);
+            });
         }
-    }).catch(function(err) {
-        console.error('Error accessing cameras.', err);
-    });
-}
-</script>
+
+    </script>
+
 </body>
+
 </html>
