@@ -46,20 +46,19 @@
         </div>
     </header>
 
-    <main class="px-20 py-20 flex flex-col bg-base-200">
-
-        <div class="join join-vertical justify-center items-center lg:join-horizontal">
+    <main class="px-2 py-10 md:px-20 md:py-20 flex flex-col bg-base-200">
+        <div class="join justify-center items-center join-horizontal">
             <a class="btn join-item bg-orange-500 text-white" href="/user.html">Users</a>
             <a class="btn join-item bg-base-100" href="/vendor.html">Vendor</a>
         </div>
         <div class="card shadow-2xl bg-base-100">
-            <div class="card-body grid grid-cols-1 gap-10" id="vendorList">
+            <div class="card-body grid grid-cols-2 lg:grid-cols-4 gap-10" id="vendorList">
 
             </div>
         </div>
     </main>
 
-    <footer class="footer p-10 bg-base-100 text-base-content grid grid-cols-4 justify-center">
+    <footer class="footer p-10 bg-base-100 text-base-content grid grid-cols-2 md:grid-cols-4 justify-center">
         <aside class="flex flex-col justify-center px-5">
             <img src="./public/logo.png" href="/index.html" class="w-72" />
             <div class="divider divider-neutral"></div>
@@ -99,13 +98,18 @@
         for (const cookie of cookies) {
             const [name, value] = cookie.split('=');
             if (name === 'LoginCookie') {
-                userDetails = JSON.parse(value);
+                userDetails = JSON.parse(decodeURIComponent(value));
                 break;
             }
         }
         if (userDetails) {
+            document.getElementById('login').style.display = 'none';
+            document.getElementById('loggedIn').style.display = 'block';
             const pointsSpan = document.getElementById('userPoints');
             pointsSpan.textContent = `Points: ${userDetails.points}`;
+        } else {
+            document.getElementById('login').style.display = 'block';
+            document.getElementById('loggedIn').style.display = 'none';
         }
 
         async function fetchVendors() {
@@ -149,35 +153,37 @@
             window.location.href = '/index.html';
         }
 
-        function handleBuyCouponClick(button, vendorId) {
+        function handleBuyCouponClick(button, vendorId, vendorName) {
             const cardBody = button.closest('.card-body');
             const existingBuyCouponSection = cardBody.querySelector('.buy-coupon-section');
             if (!existingBuyCouponSection) {
                 const buyCouponSection = document.createElement('div');
                 buyCouponSection.className = 'card shadow-xl bg-base-100 mt-5 buy-coupon-section';
                 buyCouponSection.innerHTML = `
-                        <div class="card-body">
-                            <label class="form-control">
-                                <div class="label">
-                                    <span class=" card-title">Enter Amount</span>
-                                </div>
-                                <input id="amountInput_${vendorId}" type="tel" placeholder="amount" class="input input-bordered"
-                                    oninput="updatePointsNeeded('${vendorId}')" />
-                                <div class="label">
-                                    <span id="pointsNeeded_${vendorId}" class="label-text-alt">Points Needed: 0</span>
-                                </div>
-                            </label>
+            <div class="card-body">
+                        <div class="card-title">Vendor: ${vendorName}</div>
+                <label class="form-control">
+                    <div class="label">
+                        <span class="label-title">Enter Amount</span>
+                    </div>
+                    <input id="amountInput_${vendorId}" type="tel" placeholder="amount" class="input input-bordered"
+                        oninput="updatePointsNeeded('${vendorId}')" />
+                    <div class="label">
+                        <span id="pointsNeeded_${vendorId}" class="label-text-alt">Points Needed: 0</span>
+                    </div>
+                </label>
 
-                            <button class="btn bg-orange-500 text-white" onclick="generateCoupon('${vendorId}')">
-                                Generate coupon
-                            </button>
+                <button class="btn bg-orange-500 text-white" onclick="generateCoupon('${vendorId}')">
+                    Generate coupon
+                </button>
 
-                            <div id="alert_${vendorId}"></div>
-                        </div>
-                    `;
+                <div id="alert_${vendorId}"></div>
+            </div>
+        `;
                 cardBody.appendChild(buyCouponSection);
             }
         }
+
 
         async function initPage() {
             try {
@@ -207,17 +213,18 @@
                 vendorListContainer.innerHTML = '';
                 vendorsData.items.forEach(vendor => {
                     const card = document.createElement('div');
-                    card.className = 'card w-96 bg-base-200';
+                    card.className = 'card w-72 md:w-96 bg-base-200 flex';
                     const vendorName = usersData.items.find(user => user.id === vendorMap[vendor.id])?.username || 'Unknown';
                     card.innerHTML = `
                 <div class="card-body">
                     <h2 class="card-title">${vendorName}</h2>
                     <p>Click the link below to buy coupon.</p>
                     <div class="card-actions justify-end">
-                        <button class="btn text-white bg-orange-500 w-full" onclick="handleBuyCouponClick(this, '${vendor.id}')">Buy Coupon</button>
+                        <button class="btn text-white bg-orange-500 w-full" onclick="handleBuyCouponClick(this, '${vendor.id}', '${vendorName}')">Buy Coupon</button>
+
                     </div>
                 </div>
-                <div class="qr-code" id="qrCode_${vendor.id}" style="display: none;">
+                <div class="qr-code card mx-10 mb-10 shadow-xl bg-base-100" id="qrCode_${vendor.id}" style="display: none;">
                     <div class="card-body justify-center items-center">
                         <div class="card-title">
                             Your QR code
@@ -373,5 +380,4 @@
         }
     </script>
 </body>
-
 </html>
