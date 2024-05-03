@@ -86,14 +86,18 @@
 
     <main class="px-2 py-10 md:px-20 md:py-20 flex flex-col justify-center items-center bg-base-200">
         <div class="join justify-center items-center join-horizontal">
-            <a class="btn join-item bg-base-100" href="/user.html">Users</a>
+            <a class="btn join-item bg-base-100" href="/user.html">User</a>
             <a class="btn join-item bg-orange-500 text-white" href="/vendor.html">Vendor</a>
         </div>
 
         <div class="card bg-base-100 w-72 md:w-96 shadow-xl ">
             <div class="card-body justify-center items-center">
                 <h1 class="card-title">QR Code Scanner</h1>
-                <video id="qr-video" width="500" height="300" class="border-4 border-current" autoplay></video>
+                <video id="qr-video" width="500" height="300" class="border-4 border-current" autoplay>
+
+
+                </video>
+                <button id="flipCameraButton" class="btn bg-orange-500 text-white">Flip Camera</button>
                 <p id="qr-result">ID:</p>
             </div>
         </div>
@@ -160,12 +164,23 @@
                 console.error('Instascan library is not available.');
             } else {
                 var scanner = new Instascan.Scanner({ video: document.getElementById('qr-video') });
+                let selectedCameraIndex = 0;
+                let cameras;
+
+                function toggleCamera() {
+                    selectedCameraIndex = (selectedCameraIndex + 1) % cameras.length;
+                    scanner.stop();
+                    scanner.start(cameras[selectedCameraIndex]);
+                }
 
                 scanner.addListener('scan', handleScan);
 
-                Instascan.Camera.getCameras().then(function (cameras) {
+                Instascan.Camera.getCameras().then(function (availableCameras) {
+                    cameras = availableCameras;
                     if (cameras.length > 0) {
-                        scanner.start(cameras[0]);
+                        const flipCameraButton = document.getElementById('flipCameraButton');
+                        flipCameraButton.addEventListener('click', toggleCamera);
+                        scanner.start(cameras[selectedCameraIndex]);
                     } else {
                         console.error('No cameras found.');
                     }
